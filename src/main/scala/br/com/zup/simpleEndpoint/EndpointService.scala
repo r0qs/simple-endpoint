@@ -10,6 +10,8 @@ import spray.http.{HttpRequest, HttpResponse}
 import spray.routing._
 import spray.routing.directives.LogEntry
 import spray.json._
+import spray.http.HttpHeaders._
+import spray.http.ContentTypes._
 import scala.util.matching.Regex
 
 import br.com.zup.simpleEndpoint.DotJsonProtocol._
@@ -30,31 +32,6 @@ class PayloadGeneratorActor extends Actor with PayloadGenerator {
 }
 
 trait PayloadGenerator extends HttpService with SLF4JLogging {
-  /* TODO: 
-   * - create actors to create the files in parallel and selfdestroy after creation
-   * - Use chunks (MessageChunk) to send large data (Akka streams)
-   */
-
-  val files: Map[String, String] = Map(
-    "jp"  -> s"$rootDataDir/p.json",
-    "jm"  -> s"$rootDataDir/m.json",
-    "jg"  -> s"$rootDataDir/g.json",
-    "jgg" -> s"$rootDataDir/gg.json",
-    "xp"  -> s"$rootDataDir/p.xml",
-    "xm"  -> s"$rootDataDir/m.xml",
-    "xg"  -> s"$rootDataDir/g.xml",
-    "xgg"  -> s"$rootDataDir/gg.xml"
-  )
-
-  lazy val jp  = createFile("jp", small, "json")
-  lazy val jm  = createFile("jm", medium, "json")
-  lazy val jg  = createFile("jg", big, "json")
-  lazy val jgg = createFile("jgg", large, "json")
-
-  lazy val xp  = createFile("xp", small, "xml")
-  lazy val xm  = createFile("xm", medium, "xml")
-  lazy val xg  = createFile("xg", big, "xml")
-  lazy val xgg = createFile("xgg", large, "xml")
 
   val jpattern = """\{"payload":\{"message":"(.*)"\}\}""".r;
 
@@ -63,62 +40,72 @@ trait PayloadGenerator extends HttpService with SLF4JLogging {
     case _ =>  <payload></payload>
   }
 
-  def createFile(fileName: String, size: Int, fileExtension: String): File = {
-    val file = new File(files(fileName))
+  def createFile(fileName: String, size: Int): File = {
+    val file = new File(s"$rootDataDir/" + fileName)
     if (! file.exists) {
-      fileExtension match {
-        case "json" => FileUtils.writeAllText(Payload(Dots(List.fill(size)(".").par.mkString)).toJson.toString, file)
-        case "xml" =>
-          val jsonFileName = "j" + fileName.splitAt(1)._2
-          val content = scala.io.Source.fromFile(files(jsonFileName)).getLines.mkString
-          FileUtils.writeAllText(toXML(jpattern, content).toString, file)
-      }
+      log.info("Creating file: {} with size: {} bytes", fileName, size)
+      FileUtils.writeAllText(List.fill(size)(".").par.mkString, file)
     }
     file
   }
 
+  def readFile(file: File): String = scala.io.Source.fromFile(file).getLines.mkString
+
+  val p  = createFile("p", small)
+  val m  = createFile("m", medium)
+  val g  = createFile("g", big)
+  val gg = createFile("gg", large)
+
+  lazy val jp = Payload(Dots(readFile(p))).toJson.toString
+  lazy val jm = Payload(Dots(readFile(m))).toJson.toString
+  lazy val jg = Payload(Dots(readFile(g))).toJson.toString
+  lazy val jgg = Payload(Dots(readFile(gg))).toJson.toString
+  
+  lazy val xp = toXML(jpattern, jp).toString
+  lazy val xm = toXML(jpattern, jm).toString
+  lazy val xg = toXML(jpattern, jg).toString
+  lazy val xgg = toXML(jpattern, jgg).toString
+
   val routes = {
-    get {
-      pathPrefix("p") {
-        detach() {
-          path("json") {
-            getFromFile(jp)
-          } ~
-          path("xml") {
-            getFromFile(xp)
-          }
-        }
-      } ~
-      pathPrefix("m") {
-        detach() {
-          path("json") { 
-            getFromFile(jm)
-          } ~
-          path("xml") {
-            getFromFile(xm)
-          }
-        }
-      } ~
-      pathPrefix("g") {
-        detach() {
-          path("json") { 
-            getFromFile(jg)
-          } ~
-          path("xml") {
-            getFromFile(xg)
-          }
-        }
-      } ~
-      pathPrefix("gg") {
-        detach() {
-          path("json") {
-            getFromFile(jgg)
-          } ~
-          path("xml") {
-            getFromFile(xgg)
-          }
+    pathPrefix("p") {
+      detach() {
+        path("json") {
+          complete(jp)
+        } ~
+        path("xml") {
+          complete(xp)
         }
       }
+    } ~
+  pathPrefix("m") {
+    detach() {
+      path("json") { 
+        complete(jm)
+      } ~
+      path("xml") {
+        complete(xm)
+      }
     }
+  } ~
+  pathPrefix("g") {
+    detach() {
+      path("json") {
+        complete(jg)
+      } ~
+      path("xml") {
+        complete(xg)
+      }
+    }
+  } ~
+  pathPrefix("gg") {
+    detach() {
+      path("json") {
+        complete(jgg)
+      } ~
+      path("xml") {
+        complete(xgg)
+      }
+    }
+  }
   }
 }
