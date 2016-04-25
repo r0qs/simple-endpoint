@@ -2,11 +2,13 @@ package br.com.zup.simpleEndpoint
 
 import java.io.File
 import org.parboiled.common.FileUtils
-import scala.math._
 import scala.xml._
-import akka.actor._
+import akka.actor.Actor
+import akka.event.Logging._
+import akka.event.slf4j.SLF4JLogging
+import spray.http.{HttpRequest, HttpResponse}
 import spray.routing._
-import spray.http._
+import spray.routing.directives.LogEntry
 import spray.json._
 import scala.util.matching.Regex
 
@@ -16,10 +18,18 @@ import br.com.zup.simpleEndpoint.AppConfig._
 
 class PayloadGeneratorActor extends Actor with PayloadGenerator {
   def actorRefFactory = context
-  def receive = runRoute(routes)
+  def receive = runRoute(
+    logRequestResponse(showRequestResponses _)(routes)
+  )
+
+  // Log each request and response.
+  def showRequestResponses(request: HttpRequest): Any => Option[LogEntry] = {
+    case HttpResponse(status, _, _, _) => Some(LogEntry(s"${request.method} ${request.uri} ($status)", InfoLevel))
+    case response => Some(LogEntry(s"${request.method} ${request.uri} $response", WarningLevel))
+  }
 }
 
-trait PayloadGenerator extends HttpService { 
+trait PayloadGenerator extends HttpService with SLF4JLogging {
   /* TODO: 
    * - create actors to create the files in parallel and selfdestroy after creation
    * - Use chunks (MessageChunk) to send large data (Akka streams)
@@ -71,7 +81,7 @@ trait PayloadGenerator extends HttpService {
     get {
       pathPrefix("p") {
         detach() {
-          path("json") { 
+          path("json") {
             getFromFile(jp)
           } ~
           path("xml") {
@@ -101,7 +111,7 @@ trait PayloadGenerator extends HttpService {
       } ~
       pathPrefix("gg") {
         detach() {
-          path("json") { 
+          path("json") {
             getFromFile(jgg)
           } ~
           path("xml") {
