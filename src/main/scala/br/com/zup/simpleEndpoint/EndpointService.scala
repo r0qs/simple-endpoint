@@ -6,16 +6,14 @@ import scala.xml._
 import akka.actor.Actor
 import akka.event.Logging._
 import akka.event.slf4j.SLF4JLogging
-import spray.http.{HttpRequest, HttpResponse}
+import spray.http._
+import MediaTypes._
+import spray.httpx.marshalling._
 import spray.routing._
 import spray.routing.directives.LogEntry
 import spray.json._
-import spray.http.HttpHeaders._
-import spray.http.ContentTypes._
 import scala.util.matching.Regex
 
-import br.com.zup.simpleEndpoint.DotJsonProtocol._
-import br.com.zup.simpleEndpoint.PayloadJsonProtocol._
 import br.com.zup.simpleEndpoint.AppConfig._
 
 class PayloadGeneratorActor extends Actor with PayloadGenerator {
@@ -32,6 +30,9 @@ class PayloadGeneratorActor extends Actor with PayloadGenerator {
 }
 
 trait PayloadGenerator extends HttpService with SLF4JLogging {
+  import br.com.zup.simpleEndpoint.DotJsonProtocol._
+  import br.com.zup.simpleEndpoint.PayloadJsonProtocol._
+  import spray.httpx.SprayJsonSupport._
 
   val jpattern = """\{"payload":\{"message":"(.*)"\}\}""".r;
 
@@ -56,54 +57,70 @@ trait PayloadGenerator extends HttpService with SLF4JLogging {
   val g  = createFile("g", big)
   val gg = createFile("gg", large)
 
-  lazy val jp = Payload(Dots(readFile(p))).toJson.toString
-  lazy val jm = Payload(Dots(readFile(m))).toJson.toString
-  lazy val jg = Payload(Dots(readFile(g))).toJson.toString
-  lazy val jgg = Payload(Dots(readFile(gg))).toJson.toString
+  lazy val jp = Payload(Dots(readFile(p)))
+  lazy val jm = Payload(Dots(readFile(m)))
+  lazy val jg = Payload(Dots(readFile(g)))
+  lazy val jgg = Payload(Dots(readFile(gg)))
   
-  lazy val xp = toXML(jpattern, jp).toString
-  lazy val xm = toXML(jpattern, jm).toString
-  lazy val xg = toXML(jpattern, jg).toString
-  lazy val xgg = toXML(jpattern, jgg).toString
+  lazy val xp = toXML(jpattern, jp.toJson.toString)
+  lazy val xm = toXML(jpattern, jm.toJson.toString)
+  lazy val xg = toXML(jpattern, jg.toJson.toString)
+  lazy val xgg = toXML(jpattern, jgg.toJson.toString)
 
   val routes = {
     pathPrefix("p") {
       detach() {
         path("json") {
-          complete(jp)
+          respondWithMediaType(`application/json`) {
+            complete(jp)
+          }
         } ~
         path("xml") {
-          complete(xp)
+          respondWithMediaType(`application/xml`) {
+            complete(xp)
+          }
         }
       }
     } ~
   pathPrefix("m") {
     detach() {
-      path("json") { 
-        complete(jm)
+      path("json") {
+        respondWithMediaType(`application/json`) {
+          complete(jm)
+        }
       } ~
       path("xml") {
-        complete(xm)
+        respondWithMediaType(`application/xml`) {
+          complete(xm)
+        }
       }
     }
   } ~
   pathPrefix("g") {
     detach() {
       path("json") {
-        complete(jg)
+        respondWithMediaType(`application/json`) {
+          complete(jg)
+        }
       } ~
       path("xml") {
-        complete(xg)
+        respondWithMediaType(`application/xml`) {
+          complete(xg)
+        }
       }
     }
   } ~
   pathPrefix("gg") {
     detach() {
       path("json") {
-        complete(jgg)
+        respondWithMediaType(`application/json`) {
+          complete(jgg)
+        }
       } ~
       path("xml") {
-        complete(xgg)
+        respondWithMediaType(`application/xml`) {
+          complete(xgg)
+        }
       }
     }
   }

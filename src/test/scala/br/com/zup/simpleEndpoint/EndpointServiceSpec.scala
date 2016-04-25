@@ -3,6 +3,7 @@ package br.com.zup.simpleEndpoint
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
 import spray.http._
+import spray.json._
 import StatusCodes._
 import spray.httpx.SprayJsonSupport
 import spray.testkit.ScalatestRouteTest
@@ -18,8 +19,12 @@ class EndpointServiceSpec extends FunSpec
   def actorRefFactory = system
 
   describe("Endpoint service operations:") {
-    val jsonContent = scala.io.Source.fromFile(jp).getLines.mkString
-    val xmlContent = scala.io.Source.fromFile(xp).getLines.mkString
+    import br.com.zup.simpleEndpoint.DotJsonProtocol._
+    import br.com.zup.simpleEndpoint.PayloadJsonProtocol._
+    import SprayJsonSupport._
+
+    val jsonContent = jp.toJson.prettyPrint
+    val xmlContent = xp.toString
 
     describe("GET") {
       it("should return a JSON with specific payload size") {
