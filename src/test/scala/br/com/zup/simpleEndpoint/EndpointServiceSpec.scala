@@ -28,14 +28,14 @@ class EndpointServiceSpec extends FunSpec
 
     describe("GET") {
       it("should return a JSON with specific payload size") {
-        Get("/p/json") ~> routes ~> check {
+        Get("/json/p") ~> routes ~> check {
           val r = responseAs[String]
           status should be(OK)
           assert(r === jsonContent)
         }
       }
       it("should return a XML with specific payload size") {
-        Get("/p/xml") ~> routes ~> check {
+        Get("/xml/p") ~> routes ~> check {
           val r = responseAs[String]
           status should be(OK)
           assert(r === xmlContent)
