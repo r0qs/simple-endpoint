@@ -68,61 +68,41 @@ trait PayloadGenerator extends HttpService with SLF4JLogging {
   lazy val xgg = toXML(jpattern, jgg.toJson.toString)
 
   val routes = {
-    pathPrefix("p") {
+    pathPrefix("json") {
       detach() {
-        path("json") {
-          respondWithMediaType(`application/json`) {
+        respondWithMediaType(`application/json`) {
+          path("p") {
             complete(jp) 
-          }
-        } ~
-        path("xml") {
-          respondWithMediaType(`application/xml`) {
-            complete(xp)
+          } ~
+          path("m") {
+            complete(jm) 
+          } ~
+          path("g") {
+            complete(jg) 
+          } ~
+          path("gg") {
+            complete(jgg) 
           }
         }
       }
     } ~
-  pathPrefix("m") {
-    detach() {
-      path("json") {
-        respondWithMediaType(`application/json`) {
-          complete(jm)
-        }
-      } ~
-      path("xml") {
+    pathPrefix("xml") {
+      detach() {
         respondWithMediaType(`application/xml`) {
-          complete(xm)
+          path("p") {
+            complete(xp)
+          } ~
+          path("m") {
+            complete(xm)
+          } ~
+          path("g") {
+            complete(xg)
+          } ~
+          path("gg") {
+            complete(xgg)
+          } 
         }
       }
     }
-  } ~
-  pathPrefix("g") {
-    detach() {
-      path("json") {
-        respondWithMediaType(`application/json`) {
-          complete(jg)
-        }
-      } ~
-      path("xml") {
-        respondWithMediaType(`application/xml`) {
-          complete(xg)
-        }
-      }
-    }
-  } ~
-  pathPrefix("gg") {
-    detach() {
-      path("json") {
-        respondWithMediaType(`application/json`) {
-          complete(jgg)
-        }
-      } ~
-      path("xml") {
-        respondWithMediaType(`application/xml`) {
-          complete(xgg)
-        }
-      }
-    }
-  }
   }
 }
