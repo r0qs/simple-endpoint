@@ -72,7 +72,7 @@ trait PayloadGenerator extends HttpService with SLF4JLogging {
       detach() {
         path("json") {
           respondWithMediaType(`application/json`) {
-            complete(jp)
+            complete(jp) 
           }
         } ~
         path("xml") {
