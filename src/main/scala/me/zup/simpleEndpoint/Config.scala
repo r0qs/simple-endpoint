@@ -1,4 +1,4 @@
-package br.com.zup.simpleEndpoint
+package me.zup.simpleEndpoint
 
 import com.typesafe.config.ConfigFactory
 

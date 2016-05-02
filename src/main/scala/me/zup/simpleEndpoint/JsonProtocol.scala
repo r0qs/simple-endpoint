@@ -1,7 +1,11 @@
-package br.com.zup.simpleEndpoint
+package me.zup.simpleEndpoint
 
 import spray.json._
 import DefaultJsonProtocol._ 
+
+/*
+ * Define a custom json protocol for Dots and Payload.
+ */
 
 case class Dots(message: String)
 case class Payload(payload: Dots)
@@ -12,7 +16,7 @@ object DotJsonProtocol extends DefaultJsonProtocol {
 
 object PayloadJsonProtocol extends DefaultJsonProtocol {
   implicit object PayloadJsonFormat extends RootJsonFormat[Payload] {
-    import br.com.zup.simpleEndpoint.DotJsonProtocol._
+    import me.zup.simpleEndpoint.DotJsonProtocol._
     
     def write(p: Payload): JsValue = JsObject("payload" -> p.payload.toJson)
     

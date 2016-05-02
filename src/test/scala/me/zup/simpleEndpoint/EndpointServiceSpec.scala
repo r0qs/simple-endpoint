@@ -1,4 +1,4 @@
-package br.com.zup.simpleEndpoint
+package me.zup.simpleEndpoint
 
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
@@ -9,7 +9,7 @@ import spray.httpx.SprayJsonSupport
 import spray.testkit.ScalatestRouteTest
 import spray.routing.HttpService
 
-import br.com.zup.simpleEndpoint.AppConfig._
+import me.zup.simpleEndpoint.AppConfig._
 
 class EndpointServiceSpec extends FunSpec
   with Matchers
@@ -19,8 +19,8 @@ class EndpointServiceSpec extends FunSpec
   def actorRefFactory = system
 
   describe("Endpoint service operations:") {
-    import br.com.zup.simpleEndpoint.DotJsonProtocol._
-    import br.com.zup.simpleEndpoint.PayloadJsonProtocol._
+    import me.zup.simpleEndpoint.DotJsonProtocol._
+    import me.zup.simpleEndpoint.PayloadJsonProtocol._
     import SprayJsonSupport._
 
     val jsonContent = jp.toJson.prettyPrint

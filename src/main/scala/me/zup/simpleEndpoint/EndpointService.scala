@@ -1,4 +1,4 @@
-package br.com.zup.simpleEndpoint
+package me.zup.simpleEndpoint
 
 import java.io.File
 import org.parboiled.common.FileUtils
@@ -8,13 +8,12 @@ import akka.event.Logging._
 import akka.event.slf4j.SLF4JLogging
 import spray.http._
 import MediaTypes._
-import spray.httpx.marshalling._
 import spray.routing._
 import spray.routing.directives.LogEntry
 import spray.json._
 import scala.util.matching.Regex
 
-import br.com.zup.simpleEndpoint.AppConfig._
+import me.zup.simpleEndpoint.AppConfig._
 
 class PayloadGeneratorActor extends Actor with PayloadGenerator {
   def actorRefFactory = context
@@ -22,7 +21,6 @@ class PayloadGeneratorActor extends Actor with PayloadGenerator {
     logRequestResponse(showRequestResponses _)(routes)
   )
 
-  // Log each request and response.
   def showRequestResponses(request: HttpRequest): Any => Option[LogEntry] = {
     case HttpResponse(status, _, _, _) => Some(LogEntry(s"${request.method} ${request.uri} ($status)", InfoLevel))
     case response => Some(LogEntry(s"${request.method} ${request.uri} $response", WarningLevel))
@@ -30,9 +28,11 @@ class PayloadGeneratorActor extends Actor with PayloadGenerator {
 }
 
 trait PayloadGenerator extends HttpService with SLF4JLogging {
-  import br.com.zup.simpleEndpoint.DotJsonProtocol._
-  import br.com.zup.simpleEndpoint.PayloadJsonProtocol._
+  import me.zup.simpleEndpoint.DotJsonProtocol._
+  import me.zup.simpleEndpoint.PayloadJsonProtocol._
   import spray.httpx.SprayJsonSupport._
+
+  //TODO: Rejects
 
   val jpattern = """\{"payload":\{"message":"(.*)"\}\}""".r;
 

@@ -1,4 +1,6 @@
-organization  := "br.com.zupme.simpleEndpoint"
+organization  := "me.zup"
+
+name  := "simpleEndpoint"
 
 version       := "0.1"
 
@@ -17,9 +19,10 @@ libraryDependencies ++= {
     "io.spray"            %%  "spray-json"    % sprayVersion,
     "io.spray"            %%  "spray-testkit" % sprayVersion  % "test",
     "com.typesafe.akka"   %%  "akka-actor"    % akkaVersion,
-    "com.typesafe.akka"   %%  "akka-slf4j"     % akkaVersion,
+    "com.typesafe.akka"   %%  "akka-slf4j"    % akkaVersion,
     "com.typesafe.akka"   %%  "akka-testkit"  % akkaVersion   % "test",
-    "org.scalatest"       %%  "scalatest"      % "2.2.4"       % "test"
+    "ch.qos.logback"      % "logback-classic" % "1.1.3",
+    "org.scalatest"       %%  "scalatest"     % "2.2.4"       % "test"
   )
 }
 
