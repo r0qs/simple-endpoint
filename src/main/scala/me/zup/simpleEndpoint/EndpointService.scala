@@ -41,6 +41,32 @@ trait PayloadGenerator extends HttpService with SLF4JLogging {
     case _ =>  <payload></payload>
   }
 
+  def dataXML: scala.xml.Elem = {
+    <data>
+      <title>Test</title> 
+      <userList>
+        <user>
+          <documentNumber>1111111</documentNumber>
+          <name>LAVINIA SOUZA SANTOS</name>
+          <account>739065</account>
+          <branch>0001</branch>
+        </user>
+        <user>
+          <documentNumber>2222222</documentNumber>
+          <name>JOAO MARCOS DE SOUZA</name>
+          <account>345545</account>
+          <branch>0002</branch>
+        </user>
+        <user>
+          <documentNumber>3333333</documentNumber>
+          <name>JOSE MARIA DE JESUS</name>
+          <account>233233</account>
+          <branch>0003</branch>
+        </user>
+      </userList>
+    </data>
+  }
+
   def createFile(fileName: String, size: Int): File = {
     val file = new File(s"$rootDataDir/" + fileName)
     if (! file.exists) {
@@ -66,6 +92,7 @@ trait PayloadGenerator extends HttpService with SLF4JLogging {
   lazy val xm = toXML(jpattern, jm.toJson.toString)
   lazy val xg = toXML(jpattern, jg.toJson.toString)
   lazy val xgg = toXML(jpattern, jgg.toJson.toString)
+  lazy val xmlData = dataXML
 
   val routes = {
     pathPrefix("json") {
@@ -89,6 +116,9 @@ trait PayloadGenerator extends HttpService with SLF4JLogging {
     pathPrefix("xml") {
       detach() {
         respondWithMediaType(`application/xml`) {
+          path("users") {
+            complete(xmlData)
+          } ~
           path("p") {
             complete(xp)
           } ~
